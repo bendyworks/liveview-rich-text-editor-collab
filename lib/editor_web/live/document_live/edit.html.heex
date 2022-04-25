@@ -1,0 +1,46 @@
+
+  <.form
+    let={f}
+    for={@changeset}
+    id="document-form"
+    phx-change="validate"
+    phx-submit="save">
+
+    <%= label f, :name %>
+    <%= text_input f, :name %>
+    <%= error_tag f, :name %>
+
+    <div id="data-editor" phx-update="ignore">
+      <%= textarea f, :data %>
+    </div>
+    <%# <div id="data-editor" phx-update="ignore">
+      <trix-editor input="document-form_data"></trix-editor>
+    </div> %>
+    <%= error_tag f, :data %>
+    <div>
+      <%= submit "Save", phx_disable_with: "Saving..." %>
+    </div>
+  </.form>
+
+<%#
+    <.live_component
+      module={EditorWeb.DocumentLive.FormComponent}
+      id={@document.id}
+      title={@page_title}
+      action={@live_action}
+      document={@document}
+      return_to={Routes.document_edit_path(@socket, :edit, @document)}
+    /> %>
+
+<span><%= live_redirect "Back", to: Routes.document_index_path(@socket, :index) %></span>
+<!--
+<script>
+let state = EditorState.create({schema})
+let view = new EditorView(document.querySelector(#prose-mirror), {state})
+</script>
+-->
+<script>
+document.addEventListener("DOMContentLoaded", function(event) {
+  window.setup_editor('document-form_data');
+});
+</script>

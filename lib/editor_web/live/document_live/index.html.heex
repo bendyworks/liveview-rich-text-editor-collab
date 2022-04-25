@@ -1,0 +1,40 @@
+<h1>Listing Documents</h1>
+
+<%= if @live_action in [:new, :edit] do %>
+  <.modal return_to={Routes.document_index_path(@socket, :index)}>
+    <.live_component
+      module={EditorWeb.DocumentLive.FormComponent}
+      id={@document.id || :new}
+      title={@page_title}
+      action={@live_action}
+      document={@document}
+      return_to={Routes.document_index_path(@socket, :index)}
+    />
+  </.modal>
+<% end %>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Data</th>
+
+      <th></th>
+    </tr>
+  </thead>
+  <tbody id="documents">
+    <%= for document <- @documents do %>
+      <tr id={"document-#{document.id}"}>
+        <td><%= document.name %></td>
+        <td><%= document.data %></td>
+
+        <td>
+          <span><%= live_redirect "Edit", to: Routes.document_edit_path(@socket, :edit, document) %></span>
+          <span><%= link "Delete", to: "#", phx_click: "delete", phx_value_id: document.id, data: [confirm: "Are you sure?"] %></span>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<span><%= live_patch "New Document", to: Routes.document_index_path(@socket, :new) %></span>
