@@ -14,6 +14,8 @@ defmodule Editor.Application do
       EditorWeb.Telemetry,
       # Start the PubSub system
       {Phoenix.PubSub, name: Editor.PubSub},
+      # start Presence
+      EditorWeb.DocumentPresence,
       # Start the Endpoint (http/https)
       EditorWeb.Endpoint
       # Start a worker by calling: Editor.Worker.start_link(arg)

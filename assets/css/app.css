@@ -124,3 +124,14 @@
 .round {
   border-radius: 50%;
 }
+
+.active_users {
+  list-style: none;
+  display: inline-block;
+}
+
+.active_users li {
+  display: inline-block;
+  margin: 0 -10px;
+  height: 40px;
+}
