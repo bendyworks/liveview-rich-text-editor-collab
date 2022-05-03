@@ -25,7 +25,6 @@ import "phoenix_html"
 import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
-import trix from "../vendor/trix"
 import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
