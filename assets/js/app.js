@@ -25,10 +25,48 @@ import "phoenix_html"
 import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
+import DecoupledEditor from '@ckeditor/ckeditor5-build-decoupled-document';
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
-let liveSocket = new LiveSocket("/live", Socket, {params: {_csrf_token: csrfToken}})
+let Hooks = {
+  Editor: {
+    mounted() {
+      this.el.style="display: none;";
+      this.target = this.el.getAttribute('for');
+      DecoupledEditor
+      .create( document.querySelector(`#${this.target}`) )
+      .then( editor => {
+        editor.model.document.on( 'change:data', () => {
+          data = editor.getData();
+          if ( data != this.el.value ) {
+            console.log( 'The data has changed!', data );
+            this.el.value = data;
+          }
+        });
+        document.querySelector(`#${this.target}_toolbar`).appendChild( editor.ui.view.toolbar.element );
+        this.editor = editor;
+        editor.setData(this.el.value);
+      })
+      .catch( error => {
+        console.error( error );
+      });
+    },
+    updated() {
+      this.el.style="display: none;";
+      console.log('updated', this.el.value)
+      this.editor.setData(this.el.value)
+    }
+  }
+};
+
+const socketOptions = {
+  hooks: Hooks,
+  params: {
+    _csrf_token: csrfToken
+  }
+};
+
+let liveSocket = new LiveSocket("/live", Socket, socketOptions)
 
 // Show progress bar on live navigation and form submits
 topbar.config({barColors: {0: "#29d"}, shadowColor: "rgba(0, 0, 0, .3)"})
@@ -43,14 +81,3 @@ liveSocket.connect()
 // >> liveSocket.enableLatencySim(1000)  // enabled for duration of browser session
 // >> liveSocket.disableLatencySim()
 window.liveSocket = liveSocket
-
-window.setup_editor = function setup_editor(id) {
-  ClassicEditor
-  .create( document.querySelector(`#${id}`) )
-  .then( editor => {
-    console.log( editor );
-  })
-  .catch( error => {
-    console.error( error );
-  });
-}

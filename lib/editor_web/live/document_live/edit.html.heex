@@ -11,34 +11,13 @@
     <%= text_input f, :name %>
     <%= error_tag f, :name %>
 
-    <div id="data-editor" phx-update="ignore">
-      <%= textarea f, :data %>
-    </div>
+    <%= textarea f, :data, phx_hook: "Editor", for: "document_editor" %>
     <%= error_tag f, :data %>
+    <div id="document_editor_toolbar" phx-update="ignore" />
+    <div id="document_editor" phx-update="ignore" />
     <div>
       <%= submit "Save", phx_disable_with: "Saving..." %>
     </div>
   </.form>
 
-<%#
-    <.live_component
-      module={EditorWeb.DocumentLive.FormComponent}
-      id={@document.id}
-      title={@page_title}
-      action={@live_action}
-      document={@document}
-      return_to={Routes.document_edit_path(@socket, :edit, @document)}
-    /> %>
-
 <span><%= live_redirect "Back", to: Routes.document_index_path(@socket, :index) %></span>
-<!--
-<script>
-let state = EditorState.create({schema})
-let view = new EditorView(document.querySelector(#prose-mirror), {state})
-</script>
--->
-<script>
-document.addEventListener("DOMContentLoaded", function(event) {
-  window.setup_editor('document-form_data');
-});
-</script>

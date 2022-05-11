@@ -8,6 +8,7 @@ defmodule EditorWeb.DocumentLive.Edit do
   @impl true
   def mount(_params, session, socket) do
     EditorWeb.Endpoint.subscribe(DocumentPresence.topic())
+
     {:ok, socket |> assign(user: Accounts.get_user_by_session_token(session["user_token"]))}
   end
 
@@ -38,8 +39,6 @@ defmodule EditorWeb.DocumentLive.Edit do
 
   @impl true
   def handle_event("validate", %{"document" => document_params}, socket) do
-    IO.inspect(document_params)
-
     changeset =
       socket.assigns.document
       |> Documents.change_document(document_params)
@@ -48,6 +47,7 @@ defmodule EditorWeb.DocumentLive.Edit do
     {:noreply, assign(socket, :changeset, changeset)}
   end
 
+  @impl true
   def handle_event("save", %{"document" => document_params}, socket) do
     save_document(socket, document_params)
   end
@@ -62,14 +62,45 @@ defmodule EditorWeb.DocumentLive.Edit do
     {:noreply, socket}
   end
 
+  @impl true
+  def handle_info(
+        %{event: "document_saved", payload: %{from_pid: from_pid, id: id}},
+        socket
+      )
+      when id == socket.assigns.document.id do
+    socket =
+      if from_pid != self() do
+        document = Documents.get_document!(id)
+        changeset = Documents.change_document(document)
+
+        socket
+        |> assign(:document, document)
+        |> assign(:changeset, changeset)
+      else
+        socket
+      end
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_info(%{event: "document_saved"}, socket), do: {:noreply, socket}
+
   defp page_title(:show), do: "Show Document"
   defp page_title(:edit), do: "Edit Document"
 
   defp save_document(socket, document_params) do
     case Documents.update_document(socket.assigns.document, document_params) do
-      {:ok, _document} ->
+      {:ok, document} ->
+        EditorWeb.Endpoint.broadcast(DocumentPresence.topic(), "document_saved", %{
+          id: document.id,
+          from_pid: self()
+        })
+
         {:noreply,
          socket
+         |> assign(:changeset, Documents.change_document(document))
+         |> assign(:document, document)
          |> put_flash(:info, "Document updated successfully")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
